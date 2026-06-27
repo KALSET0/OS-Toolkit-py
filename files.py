@@ -35,41 +35,46 @@ def obtener_unidades_windows():
 
 def obtener_unidades_mac():
     """Obtiene los puntos de montaje en macOS."""
-    # Obtener los puntos de montaje en macOS usando el comando 'df'
-    ctypes = __import__('ctypes')
-    # Llamar a getfsstat para obtener el número de sistemas de archivos montados
-    libc = ctypes.CDLL(None)
-    # Definir la función getfsstat con los tipos de argumentos y retorno correctos
-    num_discos = libc.getfsstat(None, 0, 2) # 2 = MNT_NOWAIT
-    
-    # Si no hay discos, devolvemos lista vacía.
-    if num_discos <= 0:
-        return []
-        
-    # Tamaño de la estructura statfs en macOS es 2160 bytes
-    tamano_statfs = 2160 
-    # Crear un buffer para almacenar la información de los sistemas de archivos
-    buffer = ctypes.create_string_buffer(tamano_statfs * num_discos)
-    # Llamar a getfsstat para llenar el buffer con la información de los sistemas de archivos
-    libc.getfsstat(buffer, buffer._length_, 2)
-    
     drives = []
-    # Iterar a través de cada estructura statfs para obtener los puntos de montaje
-    for i in range(num_discos):
-        # Calcular el inicio de la estructura statfs in el buffer
-        inicio_estructura = i * tamano_statfs
-        # Obtener la ruta del punto de montaje desde la estructura statfs
-        offset_ruta = inicio_estructura + 1024
-        # Leer los datos de la ruta desde el buffer
-        datos_ruta = buffer.raw[offset_ruta : offset_ruta + 1024]
-        # Dividir los datos de la ruta por el carácter nulo y decodificar a UTF-8
-        ruta_final = datos_ruta.split(b'\x00')[0].decode('utf-8', errors='ignore')
+
+    try:
+        # Obtener los puntos de montaje en macOS usando el comando 'df'
+        ctypes = __import__('ctypes')
+        # Llamar a getfsstat para obtener el número de sistemas de archivos montados
+        libc = ctypes.CDLL(None)
+        # Definir la función getfsstat con los tipos de argumentos y retorno correctos
+        num_discos = libc.getfsstat(None, 0, 2) # 2 = MNT_NOWAIT
         
-        # Si la ruta es válida y no está ya en la lista de drives, agregarla
-        if ruta_final and ruta_final not in drives:
-            drives.append(ruta_final)
+        # Si no hay discos, devolvemos lista vacía.
+        if num_discos <= 0:
+            return []
             
-    return drives
+        # Tamaño de la estructura statfs en macOS es 2160 bytes
+        tamano_statfs = 2160 
+        # Crear un buffer para almacenar la información de los sistemas de archivos
+        buffer = ctypes.create_string_buffer(tamano_statfs * num_discos)
+        # Llamar a getfsstat para llenar el buffer con la información de los sistemas de archivos
+        libc.getfsstat(buffer, buffer._length_, 2)
+        
+        # Iterar a través de cada estructura statfs para obtener los puntos de montaje
+        for i in range(num_discos):
+            # Calcular el inicio de la estructura statfs in el buffer
+            inicio_estructura = i * tamano_statfs
+            # Obtener la ruta del punto de montaje desde la estructura statfs
+            offset_ruta = inicio_estructura + 1024
+            # Leer los datos de la ruta desde el buffer
+            datos_ruta = buffer.raw[offset_ruta : offset_ruta + 1024]
+            # Dividir los datos de la ruta por el carácter nulo y decodificar a UTF-8
+            ruta_final = datos_ruta.split(b'\x00')[0].decode('utf-8', errors='ignore')
+            
+            # Si la ruta es válida y no está ya en la lista de drives, agregarla
+            if ruta_final and ruta_final not in drives:
+                drives.append(ruta_final)
+                
+        return drives
+    except Exception:
+        __import__('traceback').print_exc()
+        return []
 
 
 
