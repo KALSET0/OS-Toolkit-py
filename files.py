@@ -47,6 +47,13 @@ def obtener_unidades_windows():
 
 def obtener_unidades_mac():
     """Obtiene los puntos de montaje en macOS."""
+    AMARILLO = "\033[33m"
+    ROJO = "\033[31m"
+    RESET = "\033[0m"
+    if platform.system() != "Darwin":
+        print(f"obtener_unidades_mac():{ROJO} Error: Este método solo es compatible con macOS.{RESET}")
+        return []
+
     drives = []
 
     try:
@@ -59,18 +66,17 @@ def obtener_unidades_mac():
         
         # Si no hay discos, devolvemos lista vacía.
         if num_discos <= 0:
+            print(f"obtener_unidades_mac():{AMARILLO} No se encontraron unidades montadas.{RESET}")
             return []
-            
         # Tamaño de la estructura statfs en macOS es 2160 bytes
         tamano_statfs = 2160 
         # Crear un buffer para almacenar la información de los sistemas de archivos
         buffer = ctypes.create_string_buffer(tamano_statfs * num_discos)
         # Llamar a getfsstat para llenar el buffer con la información de los sistemas de archivos
         libc.getfsstat(buffer, buffer._length_, 2)
-        
         # Iterar a través de cada estructura statfs para obtener los puntos de montaje
         for i in range(num_discos):
-            # Calcular el inicio de la estructura statfs in el buffer
+            # Calcular el inicio de la estructura statfs en el buffer
             inicio_estructura = i * tamano_statfs
             # Obtener la ruta del punto de montaje desde la estructura statfs
             offset_ruta = inicio_estructura + 1024
@@ -78,13 +84,18 @@ def obtener_unidades_mac():
             datos_ruta = buffer.raw[offset_ruta : offset_ruta + 1024]
             # Dividir los datos de la ruta por el carácter nulo y decodificar a UTF-8
             ruta_final = datos_ruta.split(b'\x00')[0].decode('utf-8', errors='ignore')
-            
             # Si la ruta es válida y no está ya en la lista de drives, agregarla
-            if ruta_final and ruta_final not in drives:
+            if not ruta_final:
+                continue
+            if ruta_final not in drives:
                 drives.append(ruta_final)
-                
-        return drives
-    except Exception:
+            else:
+                print(f"obtener_unidades_mac():{AMARILLO} La ruta{RESET} {ruta_final} {AMARILLO}encontrada duplicada, no se agregará a lalista.{RESET}")
+        if not drives:
+            print(f"obtener_unidades_mac():{AMARILLO} No se encontraron unidades montadas.{RESET}")
+        return drives if drives else []
+    except Exception as e:
+        print(f"obtener_unidades_mac():{ROJO} Error al obtener unidades:{RESET} {e}")
         __import__('traceback').print_exc()
         return []
 
@@ -99,6 +110,8 @@ def obtener_unidades_mac():
 def buscar_por_prefijo(ruta_acceso, prefijo):
     """Busca archivos que empiecen con un texto específico (ej: 'reporte_')."""
     pass
+
+
 
 def buscar_por_nombre(ruta_acceso, nombre):
     """Busca archivos por coincidencia exacta o parcial."""
