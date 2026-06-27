@@ -98,6 +98,12 @@ def get_mac_drives():
         print(f"get_mac_drives():{RED} Error getting drives:{RESET} {e}")
         __import__('traceback').print_exc()
         return []
+    
+
+
+def get_linux_drives():
+    """Gets the mount points in Linux."""
+    pass
 
 
 
