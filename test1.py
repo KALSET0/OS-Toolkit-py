@@ -1,48 +1,40 @@
-import platform
+import os
+import shutil
 import string
+import platform
 
-def obtener_unidades():
-    """Detecta el OS y devuelve las unidades o puntos de montaje disponibles."""
-    os_actual = platform.system()
+def obtener_unidades_windows():
+    """Obtiene los puntos de montaje en Windows."""
+    AMARILLO = "\033[33m"
+    ROJO = "\033[31m"
+    RESET = "\033[0m"
+    if platform.system() != "Windows":
+        print(f"obtener_unidades_windows():{ROJO} Error: Este método solo es compatible con Windows.{RESET}")
+        return []
+    
     drives = []
-
-    # === BLOQUE WINDOWS ===
-    if os_actual == "Windows":
-        try:
-            bitmask = __import__('ctypes').windll.kernel32.GetLogicalDrives()
-            for i in range(26):
-                if bitmask & (1 << i):
-                    drives.append(f"{string.ascii_uppercase[i]}:\\")
-            return drives
-        except Exception:
-            return []
-
-    # === BLOQUE LINUX ===
-    elif os_actual == "Linux":
-        try:
-            with open("/proc/mounts", "r", encoding="utf-8") as f:
-                for linea in f:
-                    partes = linea.split()
-                    if len(partes) >= 2:
-                        ruta = partes[1]
-                        if ruta == "/" or ruta.startswith(("/media", "/mnt")):
-                            if ruta not in drives:
-                                drives.append(ruta)
-            return drives
-        except Exception:
-            return []
-
-    # === BLOQUE MAC ===
-    elif os_actual == "Darwin":
-        # En Mac usamos el comando 'df' a través de subprocesos
-        try:
-            output = __import__('subprocess').check_output(["df", "-g"]).decode("utf-8")
-            for linea in output.splitlines()[1:]:
-                partes = linea.split()
-                if partes and (partes[-1] == "/" or partes[-1].startswith("/Volumes/")):
-                    drives.append(partes[-1])
-            return drives
-        except Exception:
-            return ["/"]
-
-    return drives
+    
+    try:
+        # Obtener los puntos de montaje en Windows
+        bitmask = __import__('ctypes').windll.kernel32.GetLogicalDrives()
+        # Iterar a través de las 26 letras del alfabeto para verificar qué los puntos de montaje están existentes
+        for i in range(26):
+            if bitmask & (1 << i):
+                # Construir la letra de la unidad y agregarla a la lista de drives
+                letra = f"{string.ascii_uppercase[i]}:\\"
+                # Verificar si la letra ya está en la lista de drives antes de agregarla
+                if letra not in drives:
+                    drives.append(letra)
+                else:
+                    print(f"obtener_unidades_windows():{AMARILLO} La unidad{RESET} {letra} {AMARILLO}encontrada duplicada, no se agregará a la lista.{RESET}")
+        if not drives:
+            print(f"obtener_unidades_windows():{AMARILLO} No se encontraron unidades montadas.{RESET}")
+        return drives if drives else []
+    except Exception as e:
+        print(f"obtener_unidades_windows():{ROJO} Error al obtener unidades:{RESET} {e}")
+        __import__('traceback').print_exc()
+        return []
+    
+drives = obtener_unidades_windows()
+for drive in drives:
+    print(f"Unidad encontrada: {drive}")
