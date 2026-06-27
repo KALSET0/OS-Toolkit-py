@@ -12,7 +12,7 @@ import platform
 
 
 def obtener_unidades_windows():
-   """Obtiene los puntos de montaje en Windows."""
+    """Obtiene los puntos de montaje en Windows."""
     AMARILLO = "\033[33m"
     ROJO = "\033[31m"
     RESET = "\033[0m"
