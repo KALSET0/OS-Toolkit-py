@@ -13,19 +13,24 @@ import platform
 
 def obtener_unidades_windows():
     """Obtiene los puntos de montaje en Windows."""
-    # Obtener los puntos de montaje en Windows
-    bitmask = __import__('ctypes').windll.kernel32.GetLogicalDrives()
     drives = []
     
-    # Iterar a través de las 26 letras del alfabeto para verificar qué los puntos de montaje están existentes
-    for i in range(26):
-        if bitmask & (1 << i):
-            # Construir la letra de la unidad y agregarla a la lista de drives
-            letra = f"{string.ascii_uppercase[i]}:\\"
-            # Verificar si la letra ya está en la lista de drives antes de agregarla
-            if letra not in drives:
-                drives.append(letra)
-    return drives
+    try:
+        # Obtener los puntos de montaje en Windows
+        bitmask = __import__('ctypes').windll.kernel32.GetLogicalDrives()
+        
+        # Iterar a través de las 26 letras del alfabeto para verificar qué los puntos de montaje están existentes
+        for i in range(26):
+            if bitmask & (1 << i):
+                # Construir la letra de la unidad y agregarla a la lista de drives
+                letra = f"{string.ascii_uppercase[i]}:\\"
+                # Verificar si la letra ya está en la lista de drives antes de agregarla
+                if letra not in drives:
+                    drives.append(letra)
+        return drives
+    except Exception:
+        __import__('traceback').print_exc()
+        return []
 
 
 def obtener_unidades_mac():
