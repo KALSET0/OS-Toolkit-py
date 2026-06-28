@@ -3,38 +3,36 @@ import shutil
 import string
 import platform
 
-def obtener_unidades_windows():
-    """Obtiene los puntos de montaje en Windows."""
-    AMARILLO = "\033[33m"
-    ROJO = "\033[31m"
+class DriveManager:
+    @staticmethod
+    def get_windows_drives():
+    """Gets the mount points in Windows."""
+    YELLOW = "\033[33m"
+    RED = "\033[31m"
     RESET = "\033[0m"
     if platform.system() != "Windows":
-        print(f"obtener_unidades_windows():{ROJO} Error: Este método solo es compatible con Windows.{RESET}")
+        print(f"get_windows_drives():{RED} Error: This method is only compatible with Windows.{RESET}")
         return []
     
     drives = []
     
     try:
-        # Obtener los puntos de montaje en Windows
+        # Get the mount points in Windows
         bitmask = __import__('ctypes').windll.kernel32.GetLogicalDrives()
-        # Iterar a través de las 26 letras del alfabeto para verificar qué los puntos de montaje están existentes
+        # Iterate through the 26 letters of the alphabet to check which mount points exist
         for i in range(26):
             if bitmask & (1 << i):
-                # Construir la letra de la unidad y agregarla a la lista de drives
-                letra = f"{string.ascii_uppercase[i]}:\\"
-                # Verificar si la letra ya está en la lista de drives antes de agregarla
-                if letra not in drives:
-                    drives.append(letra)
+                # Build the drive letter and add it to the drives list
+                letter = f"{string.ascii_uppercase[i]}:\\"
+                # Check if the letter is already in the drives list before adding it
+                if letter not in drives:
+                    drives.append(letter)
                 else:
-                    print(f"obtener_unidades_windows():{AMARILLO} La unidad{RESET} {letra} {AMARILLO}encontrada duplicada, no se agregará a la lista.{RESET}")
+                    print(f"get_windows_drives():{YELLOW} The drive{RESET} {letter} {YELLOW}was found duplicated, it will not be added to the list.{RESET}")
         if not drives:
-            print(f"obtener_unidades_windows():{AMARILLO} No se encontraron unidades montadas.{RESET}")
+            print(f"get_windows_drives():{YELLOW} No mounted drives were found.{RESET}")
         return drives if drives else []
     except Exception as e:
-        print(f"obtener_unidades_windows():{ROJO} Error al obtener unidades:{RESET} {e}")
+        print(f"get_windows_drives():{RED} Error getting drives:{RESET} {e}")
         __import__('traceback').print_exc()
         return []
-    
-drives = obtener_unidades_windows()
-for drive in drives:
-    print(f"Unidad encontrada: {drive}")
