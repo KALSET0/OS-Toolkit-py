@@ -109,8 +109,21 @@ class DriveManager:
     @staticmethod
     def get_linux_drives():
         """Gets the mount points in Linux."""
-    
-        pass
+
+
+
+    @classmethod
+    def get_drives(cls):
+        """Gets the mount points based on the current operating system."""
+        YELLOW = "\033[33m"
+        RED = "\033[31m"
+        RESET = "\033[0m"
+        current_os = platform.system()
+        return {
+            "Windows": cls.get_windows_drives,
+            "Darwin": cls.get_mac_drives,
+            "Linux": cls.get_linux_drives
+        }.get(current_os, lambda: print(f"get_drives():{RED} Error: Unsupported operating system:{RESET} {current_os}"))()
 
 
 
