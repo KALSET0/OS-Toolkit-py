@@ -7,9 +7,7 @@ import traceback
 class DriveManager:
 
     @staticmethod
-        
-
-    def get_windows_drives(self):
+    def get_windows_drives():
         """Gets the mount points in Windows."""
         YELLOW = "\033[33m"
         RED = "\033[31m"
@@ -42,7 +40,7 @@ class DriveManager:
             return []
         
 
-
+    @staticmethod
     def get_mac_drives():
         """Gets the mount points in macOS."""
         YELLOW = "\033[33m"
@@ -97,15 +95,15 @@ class DriveManager:
             __import__('traceback').print_exc()
             return []
         
-    @classmethod
-    def get_drives(cls):
+    @staticmethod
+    def get_drives():
         OSystem = platform.system()
         if OSystem == "Windows":
-            return cls.get_windows_drives()
+            return DriveManager.get_windows_drives()
         elif OSystem == "Darwin":
-            return cls.get_mac_drives()
+            return DriveManager.get_mac_drives()
         else:
             print("Unsupported operating system.")
             return []
 
-print(DriveManager.get_drives())
+print(DriveManager.get_mac_drives())

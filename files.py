@@ -103,6 +103,7 @@ def get_mac_drives():
 
 def get_linux_drives():
     """Gets the mount points in Linux."""
+    
     pass
 
 
