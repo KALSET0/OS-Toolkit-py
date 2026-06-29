@@ -3,9 +3,9 @@ import shutil
 import string
 import platform
 
-from files import DriveManager
+from files import DriveManager as DM
 
 #test
-drives = DriveManager()
+drives = DM()
 Windows_drives = drives.get_windows_drives()
 print(Windows_drives)
