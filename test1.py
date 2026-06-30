@@ -1,12 +1,6 @@
-import os
-import shutil
-import string
-import platform
-
-from storage import DriveManager as DM
-
+from storage import DriveManager
 #test
-drives = DM()
+drives = DriveManager()
 Windows_drives = drives.get_drives()
 for drive in Windows_drives:
     print(drive)

@@ -1,12 +1,22 @@
-from sys import platform
+import platform
+from users import UserManager
 
 
-def is_admin():
-    try:
-        # Llama a una función de Windows que solo los administradores pueden usar con éxito
-        return __import__('ctypes').windll.shell32.IsUserAnAdmin() != 0
-    except:
-        return False
+
     
 #test
-print(is_admin())
+admin = UserManager.is_admin_windows()
+RunAsAdmin = UserManager.run_as_admin_windows()
+print(f"Is the current user an admin? {admin}")
+print('hello')
+print('bye')
+if admin:
+    print("The current user has administrative privileges.")
+    exit()
+else:
+    try:
+        RunAsAdmin()
+    except Exception as e:
+        print(f"Error: {e}")
+        __import__('traceback').print_exc()
+    print(f"The current user is: {admin}")

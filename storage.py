@@ -1,8 +1,6 @@
-import os
-import shutil
 import string
 import platform
-
+import ctypes
 
 
 # =====================================================================
@@ -28,7 +26,7 @@ class DriveManager:
         
         try:
             # Get the mount points in Windows
-            bitmask = __import__('ctypes').windll.kernel32.GetLogicalDrives()
+            bitmask = ctypes.windll.kernel32.GetLogicalDrives()
             # Iterate through the 26 letters of the alphabet to check which mount points exist
             for i in range(26):
                 if bitmask & (1 << i):
@@ -62,7 +60,7 @@ class DriveManager:
         drives = []
 
         try:
-            ctypes = __import__('ctypes')   # Get the mount points in macOS using the 'df' command
+            # Get the mount points in macOS using the 'df' command
             libc = ctypes.CDLL(None)        # Call getfsstat to get the number of mounted file systems
             # Define the getfsstat function with the correct argument and return types
             num_disks = libc.getfsstat(None, 0, 2) # 2 = MNT_NOWAIT
@@ -107,20 +105,19 @@ class DriveManager:
             return []
 
         # Define a ctypes Structure to represent the mntent structure in Linux
-        class mntent(__import__('ctypes').Structure):
+        class mntent(ctypes.Structure):
             _fields_ = [
-                ("mnt_fsname", __import__('ctypes').c_char_p), # name of mounted file system
-                ("mnt_dir", __import__('ctypes').c_char_p),    # directory where the file system is mounted
-                ("mnt_type", __import__('ctypes').c_char_p),   # type of the file system
-                ("mnt_opts", __import__('ctypes').c_char_p),   # mount options
-                ("mnt_freq", __import__('ctypes').c_int),      # dump frequency
-                ("mnt_passno", __import__('ctypes').c_int)     # pass number
+                ("mnt_fsname", ctypes.c_char_p), # name of mounted file system
+                ("mnt_dir", ctypes.c_char_p),    # directory where the file system is mounted
+                ("mnt_type", ctypes.c_char_p),   # type of the file system
+                ("mnt_opts", ctypes.c_char_p),   # mount options
+                ("mnt_freq", ctypes.c_int),      # dump frequency
+                ("mnt_passno", ctypes.c_int)     # pass number
             ]
 
         drives = []
 
         try:
-            ctypes = __import__('ctypes')
             libc = ctypes.CDLL(None)      # Load the standard C library (libc) to access Linux system calls
 
             # Configure the argument and return types for the setmntent, getmntent, and endmntent functions
