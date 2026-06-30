@@ -95,7 +95,7 @@ class DriveManager:
                 if final_path not in drives:
                     drives.append(final_path)
                 else:
-                    print(f"get_mac_drives():{YELLOW} The path{RESET} {final_path} {YELLOW}was found duplicated, it will not be added to the list.{RESET}")
+                    print(f"get_mac_drives():{YELLOW} The drive{RESET} {final_path} {YELLOW}was found duplicated, it will not be added to the list.{RESET}")
             if not drives:
                 print(f"get_mac_drives():{YELLOW} No mounted drives were found.{RESET}")
             return drives if drives else []
