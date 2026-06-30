@@ -62,36 +62,25 @@ class DriveManager:
         drives = []
 
         try:
-            # Get the mount points in macOS using the 'df' command
-            ctypes = __import__('ctypes')
-            # Call getfsstat to get the number of mounted file systems
-            libc = ctypes.CDLL(None)
+            ctypes = __import__('ctypes')   # Get the mount points in macOS using the 'df' command
+            libc = ctypes.CDLL(None)        # Call getfsstat to get the number of mounted file systems
             # Define the getfsstat function with the correct argument and return types
             num_disks = libc.getfsstat(None, 0, 2) # 2 = MNT_NOWAIT
             
-            # If there are no disks, we return an empty list.
             if num_disks <= 0:
                 print(f"get_mac_drives():{YELLOW} No mounted drives were found.{RESET}")
                 return []
-            # Size of the statfs structure in macOS is 2160 bytes
-            statfs_size = 2160 
-            # Create a buffer to store the file systems information
-            buffer = ctypes.create_string_buffer(statfs_size * num_disks)
-            # Call getfsstat to fill the buffer with the file systems information
-            libc.getfsstat(buffer, buffer._length_, 2)
+            statfs_size = 2160                                             # Size of the statfs structure in macOS is 2160 bytes
+            buffer = ctypes.create_string_buffer(statfs_size * num_disks)  # Create a buffer to store the file systems information
+            libc.getfsstat(buffer, buffer._length_, 2)                     # Call getfsstat to fill the buffer with the file systems information
             # Iterate through each statfs structure to get the mount points
             for i in range(num_disks):
-                # Calculate the start of the statfs structure in the buffer
-                struct_start = i * statfs_size
-                # Get the path of the mount point from the statfs structure
-                path_offset = struct_start + 1024
-                # Read the path data from the buffer
-                path_data = buffer.raw[path_offset : path_offset + 1024]
-                # Split the path data by the null character and decode to UTF-8
-                final_path = path_data.split(b'\x00')[0].decode('utf-8', errors='ignore')
-                # If the path is valid and is not already in the drives list, add it
+                struct_start = i * statfs_size                             # Calculate the start of the statfs structure in the buffer
+                path_offset = struct_start + 1024                          # Get the path of the mount point from the statfs structure
+                path_data = buffer.raw[path_offset : path_offset + 1024]   # Read the path data from the buffer
+                final_path = path_data.split(b'\x00')[0].decode('utf-8', errors='ignore') # Split the path data by the null character and decode to UTF-8
                 if not final_path:
-                    continue
+                    continue  # Skip empty paths
                 if final_path not in drives:
                     drives.append(final_path)
                 else:
@@ -109,6 +98,73 @@ class DriveManager:
     @staticmethod
     def get_linux_drives():
         """Gets the mount points in Linux."""
+        YELLOW = "\033[33m"
+        RED = "\033[31m"
+        RESET = "\033[0m"
+        
+        if platform.system() != "Linux":
+            print(f"get_linux_drives():{RED} Error: This method is only compatible with Linux.{RESET}")
+            return []
+
+        # Define a ctypes Structure to represent the mntent structure in Linux
+        class mntent(__import__('ctypes').Structure):
+            _fields_ = [
+                ("mnt_fsname", __import__('ctypes').c_char_p), # name of mounted file system
+                ("mnt_dir", __import__('ctypes').c_char_p),    # directory where the file system is mounted
+                ("mnt_type", __import__('ctypes').c_char_p),   # type of the file system
+                ("mnt_opts", __import__('ctypes').c_char_p),   # mount options
+                ("mnt_freq", __import__('ctypes').c_int),      # dump frequency
+                ("mnt_passno", __import__('ctypes').c_int)     # pass number
+            ]
+
+        drives = []
+
+        try:
+            ctypes = __import__('ctypes')
+            libc = ctypes.CDLL(None)      # Load the standard C library (libc) to access Linux system calls
+
+            # Configure the argument and return types for the setmntent, getmntent, and endmntent functions
+            libc.setmntent.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+            libc.setmntent.restype = ctypes.c_void_p
+            
+            libc.getmntent.argtypes = [ctypes.c_void_p]
+            libc.getmntent.restype = ctypes.POINTER(mntent)
+            
+            libc.endmntent.argtypes = [ctypes.c_void_p]
+            libc.endmntent.restype = ctypes.c_int
+
+            # Open the /proc/mounts file to read the list of mounted file systems
+            fp = libc.setmntent(b"/proc/mounts", b"r")
+            if not fp:
+                print(f"get_linux_drives():{RED} Error: Could not read mount points.{RESET}")
+                return []
+
+            while True:
+                entry_ptr = libc.getmntent(fp)
+                if not entry_ptr:  # NULL pointer means no more entries
+                    break
+                
+                entry = entry_ptr.contents
+                dispositivo = entry.mnt_fsname.decode('utf-8', errors='ignore')
+                punto_montaje = entry.mnt_dir.decode('utf-8', errors='ignore')
+
+                # Filter out non-device entries and duplicates, only add valid mount points
+                if dispositivo.startswith("/dev/"):
+                    if punto_montaje not in drives:
+                        drives.append(punto_montaje)
+                    else:
+                        print(f"get_linux_drives():{YELLOW} The drive{RESET} {punto_montaje} {YELLOW}was found duplicated.{RESET}")
+
+            libc.endmntent(fp) # Close the file pointer to /proc/mounts after reading all entries
+            
+            if not drives:
+                print(f"get_linux_drives():{YELLOW} No mounted drives were found.{RESET}")
+            return drives if drives else []
+            
+        except Exception as e:
+            print(f"get_linux_drives():{RED} Error getting drives:{RESET} {e}")
+            __import__('traceback').print_exc()
+            return []
 
 
 
