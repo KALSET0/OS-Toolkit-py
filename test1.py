@@ -3,6 +3,7 @@ import shutil
 import string
 import platform
 import traceback
+import ctypes
 
 class DriveManager:
 
@@ -20,7 +21,7 @@ class DriveManager:
         
         try:
             # Get the mount points in Windows
-            bitmask = __import__('ctypes').windll.kernel32.GetLogicalDrives()
+            bitmask = ctypes.windll.kernel32.GetLogicalDrives()
             # Iterate through the 26 letters of the alphabet to check which mount points exist
             for i in range(26):
                 if bitmask & (1 << i):
@@ -36,7 +37,7 @@ class DriveManager:
             return drives if drives else []
         except Exception as e:
             print(f"get_windows_drives():{RED} Error getting drives:{RESET} {e}")
-            __import__('traceback').print_exc()
+            traceback.print_exc()
             return []
         
 
@@ -53,8 +54,6 @@ class DriveManager:
         drives = []
 
         try:
-            # Get the mount points in macOS using the 'df' command
-            ctypes = __import__('ctypes')
             # Call getfsstat to get the number of mounted file systems
             libc = ctypes.CDLL(None)
             # Define the getfsstat function with the correct argument and return types
@@ -92,8 +91,15 @@ class DriveManager:
             return drives if drives else []
         except Exception as e:
             print(f"get_mac_drives():{RED} Error getting drives:{RESET} {e}")
-            __import__('traceback').print_exc()
+            traceback.print_exc()
             return []
+
+
+    def get_linux_drives():
+        """Gets the mount points in Linux."""
+        
+        pass
+
         
     @staticmethod
     def get_drives():
