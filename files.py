@@ -106,9 +106,9 @@ class DriveManager:
     @staticmethod
     def get_linux_drives():
         """Gets the mount points in Linux."""
-        Yellow = "\033[33m"
-        Red = "\033[31m"
-        Reset = "\033[0m"
+        YELLOW = "\033[33m"
+        RED = "\033[31m"
+        RESET = "\033[0m"
 
         print(f"get_linux_drives():{YELLOW} This method is not yet implemented for Linux.{RESET}")
         return []
