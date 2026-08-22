@@ -103,10 +103,15 @@ class DriveManager:
             return []
 
 
+    @staticmethod
     def get_linux_drives():
         """Gets the mount points in Linux."""
-        
-        pass
+        Yellow = "\033[33m"
+        Red = "\033[31m"
+        Reset = "\033[0m"
+
+        print(f"get_linux_drives():{YELLOW} This method is not yet implemented for Linux.{RESET}")
+        return []
 
         
     @staticmethod
@@ -116,6 +121,8 @@ class DriveManager:
             return DriveManager.get_windows_drives()
         elif OSystem == "Darwin":
             return DriveManager.get_mac_drives()
+        elif OSystem == "Linux":
+            return DriveManager.get_linux_drives()
         else:
             print("Unsupported operating system.")
             return []
