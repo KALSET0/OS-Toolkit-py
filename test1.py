@@ -113,3 +113,4 @@ class DriveManager:
             return []
 
 print(DriveManager.get_mac_drives())
+print(DriveManager.get_windows_drives())
